@@ -484,7 +484,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 0e0
+    clock_rate: 125.0e6
     clock_source0: ''
     clock_source1: ''
     clock_source2: ''

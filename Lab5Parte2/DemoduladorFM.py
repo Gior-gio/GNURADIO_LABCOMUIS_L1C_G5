@@ -96,7 +96,7 @@ class DemoduladorFM(gr.top_block, Qt.QWidget):
         self._Ga_win = RangeWidget(self._Ga_range, self.set_Ga, "Amplitud Radio", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._Ga_win)
         self.uhd_usrp_source_0 = uhd.usrp_source(
-            ",".join(("", '')),
+            ",".join(("", '', "master_clock_rate=125.0e6")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
