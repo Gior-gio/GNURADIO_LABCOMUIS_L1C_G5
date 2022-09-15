@@ -5,9 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0
 #
 # GNU Radio Python Flow Graph
-# Title: TransmisorAM
-# Author: JK and JA
-# Copyright: UIS
+# Title: Not titled yet
 # GNU Radio version: 3.9.5.0
 
 from distutils.version import StrictVersion
@@ -27,7 +25,7 @@ import sys
 sys.path.append(os.environ.get('GRC_HIER_PATH', os.path.expanduser('~/.grc_gnuradio')))
 
 from CalculoPComunicaciones import CalculoPComunicaciones  # grc-generated hier_block
-from ModuladorAML1C import ModuladorAML1C  # grc-generated hier_block
+from EnvolventeDSBSC import EnvolventeDSBSC  # grc-generated hier_block
 from gnuradio import analog
 from gnuradio import gr
 from gnuradio.filter import firdes
@@ -46,12 +44,12 @@ from PyQt5 import QtCore
 
 from gnuradio import qtgui
 
-class TransmisorAM(gr.top_block, Qt.QWidget):
+class TransmisorDSBSCL1C(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "TransmisorAM", catch_exceptions=True)
+        gr.top_block.__init__(self, "Not titled yet", catch_exceptions=True)
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("TransmisorAM")
+        self.setWindowTitle("Not titled yet")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
@@ -69,7 +67,7 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "TransmisorAM")
+        self.settings = Qt.QSettings("GNU Radio", "TransmisorDSBSCL1C")
 
         try:
             if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -82,9 +80,9 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 200000
-        self.ka = ka = 1
+        self.samp_rate = samp_rate = 1000000
         self.fc = fc = 50000000
+        self.Mode = Mode = 1
         self.GTX = GTX = 0
         self.Ac = Ac = 0.1
         self.A = A = 1
@@ -92,12 +90,12 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-        self._ka_range = Range(0, 4, 0.0001, 1, 200)
-        self._ka_win = RangeWidget(self._ka_range, self.set_ka, "Coeficiente ka", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.top_layout.addWidget(self._ka_win)
         self._fc_range = Range(50000000, 2200000000, 1000000, 50000000, 200)
         self._fc_win = RangeWidget(self._fc_range, self.set_fc, "Frecuencia Portadora", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._fc_win)
+        self._Mode_range = Range(-1, 1, 2, 1, 200)
+        self._Mode_win = RangeWidget(self._Mode_range, self.set_Mode, "Modo", "counter_slider", int, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._Mode_win)
         self._GTX_range = Range(0, 30, 1, 0, 200)
         self._GTX_win = RangeWidget(self._GTX_range, self.set_GTX, "Ganancia del Tx", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._GTX_win)
@@ -117,15 +115,15 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
             "",
         )
         self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_sink_0.set_time_now(uhd.time_spec(time.time()), uhd.ALL_MBOARDS)
+        # No synchronization enforced.
 
         self.uhd_usrp_sink_0.set_center_freq(fc, 0)
         self.uhd_usrp_sink_0.set_antenna("TX/RX", 0)
         self.uhd_usrp_sink_0.set_gain(GTX, 0)
-        self.analog_sig_source_x_0 = analog.sig_source_f(samp_rate, analog.GR_COS_WAVE, 10000, A, 0, 0)
-        self.ModuladorAML1C_0 = ModuladorAML1C(
+        self.analog_sig_source_x_0 = analog.sig_source_f(samp_rate, analog.GR_COS_WAVE, 100000, A, 0, 0)
+        self.EnvolventeDSBSC_0 = EnvolventeDSBSC(
             Ac=Ac,
-            ka=ka,
+            K=Mode,
         )
         self.CalculoPComunicaciones_0 = CalculoPComunicaciones(
             l_vect=1024,
@@ -137,13 +135,13 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.ModuladorAML1C_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.EnvolventeDSBSC_0, 0), (self.uhd_usrp_sink_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.CalculoPComunicaciones_0, 0))
-        self.connect((self.analog_sig_source_x_0, 0), (self.ModuladorAML1C_0, 0))
+        self.connect((self.analog_sig_source_x_0, 0), (self.EnvolventeDSBSC_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "TransmisorAM")
+        self.settings = Qt.QSettings("GNU Radio", "TransmisorDSBSCL1C")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -158,19 +156,19 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
 
-    def get_ka(self):
-        return self.ka
-
-    def set_ka(self, ka):
-        self.ka = ka
-        self.ModuladorAML1C_0.set_ka(self.ka)
-
     def get_fc(self):
         return self.fc
 
     def set_fc(self, fc):
         self.fc = fc
         self.uhd_usrp_sink_0.set_center_freq(self.fc, 0)
+
+    def get_Mode(self):
+        return self.Mode
+
+    def set_Mode(self, Mode):
+        self.Mode = Mode
+        self.EnvolventeDSBSC_0.set_K(self.Mode)
 
     def get_GTX(self):
         return self.GTX
@@ -184,7 +182,7 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
 
     def set_Ac(self, Ac):
         self.Ac = Ac
-        self.ModuladorAML1C_0.set_Ac(self.Ac)
+        self.EnvolventeDSBSC_0.set_Ac(self.Ac)
 
     def get_A(self):
         return self.A
@@ -196,7 +194,7 @@ class TransmisorAM(gr.top_block, Qt.QWidget):
 
 
 
-def main(top_block_cls=TransmisorAM, options=None):
+def main(top_block_cls=TransmisorDSBSCL1C, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
         style = gr.prefs().get_string('qtgui', 'style', 'raster')
